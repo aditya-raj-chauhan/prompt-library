@@ -2,44 +2,78 @@ package com.devotee.promptlibrary.controller;
 
 import com.devotee.promptlibrary.dto.UserRequest;
 import com.devotee.promptlibrary.dto.UserResponse;
-import com.devotee.promptlibrary.model.User;
 import com.devotee.promptlibrary.service.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
 @RestController
-@RequestMapping("api/users")
+@RequestMapping("/api/users")
 @RequiredArgsConstructor
 @Slf4j
 public class UserEntryController {
+
     private final UserService userService;
 
     @PostMapping("/register")
-    public ResponseEntity<?>registerUser(@RequestBody UserRequest userRequest){
-        log.info("inside the UserService -register ()");
-       UserResponse response= userService.register(userRequest);
-       return ResponseEntity.ok(response);
+    public ResponseEntity<?> registerUser(
+            @RequestBody UserRequest userRequest
+    ) {
 
+        log.info("Register request received for email: {}", userRequest.getEmail());
 
+        UserResponse response = userService.register(userRequest);
+
+        log.info("User registered successfully with username: {}", response.getUsername());
+
+        return ResponseEntity
+                .status(HttpStatus.CREATED)
+                .body(response);
     }
 
     @GetMapping("/all-users")
-    public ResponseEntity<?>getAllUsers(){
-        List<UserResponse>users=userService.getAllUsers();
-        return ResponseEntity.ok(users);
+    public ResponseEntity<?> getAllUsers() {
 
+        log.info("Fetching all users");
+
+        List<UserResponse> users = userService.getAllUsers();
+
+        log.info("Total users fetched: {}", users.size());
+
+        return ResponseEntity.ok(users);
     }
 
-    @GetMapping("user/{email}")
-    public ResponseEntity<?>getUserByEmail(@PathVariable String email){
+    @GetMapping("/user/{email}")
+    public ResponseEntity<?> getUserByEmail(
+            @PathVariable String email
+    ) {
 
-        User user=userService.getUserByEmail(email);
+        log.info("Fetching user by email: {}", email);
+
+        UserResponse user = userService.getUserByEmail(email);
+
+        log.info("User fetched successfully: {}", user.getUsername());
+
         return ResponseEntity.ok(user);
+    }
 
+    @DeleteMapping("/user/delete/{email}")
+    public ResponseEntity<?> deleteUser(
+            @PathVariable String email
+    ) {
 
+        log.info("Delete request received for user email: {}", email);
+
+        userService.deleteUserByEmail(email);
+
+        log.info("User deleted successfully with email: {}", email);
+
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .body("User deleted successfully");
     }
 }
