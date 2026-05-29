@@ -5,6 +5,7 @@ import com.devotee.promptlibrary.dto.UserResponse;
 import com.devotee.promptlibrary.model.User;
 import com.devotee.promptlibrary.repositroy.UserRepo;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -17,9 +18,15 @@ public class UserService {
 
     private final UserRepo userRepository;
 
+    private final PasswordEncoder passwordEncoder;
+
     public UserResponse register(UserRequest userRequest) {
 
         User user = convertToUser(userRequest);
+
+        user.setPassword(
+                passwordEncoder.encode(userRequest.getPassword())
+        );
 
         User savedUser = userRepository.save(user);
 
@@ -33,6 +40,24 @@ public class UserService {
         return users.stream()
                 .map(this::convertToResponse)
                 .toList();
+    }
+
+    public UserResponse getUserByEmail(String email) {
+
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        return convertToResponse(user);
+    }
+
+    public void deleteUserByEmail(String email) {
+
+        User existingUser = userRepository.findByEmail(email)
+                .orElseThrow(() ->
+                        new RuntimeException("User not found with this email")
+                );
+
+        userRepository.delete(existingUser);
     }
 
     private User convertToUser(UserRequest userRequest) {
@@ -71,20 +96,4 @@ public class UserService {
                 .updatedAt(user.getUpdatedAt())
                 .build();
     }
-    public UserResponse getUserByEmail(String email) {
-
-        User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new RuntimeException("User not found"));
-
-        return convertToResponse(user);
-    }
-
-    public void deleteUserByEmail(String email) {
-
-        User existingUser = userRepository.findByEmail(email)
-                .orElseThrow(() -> new RuntimeException("User not found with this email"));
-
-        userRepository.delete(existingUser);
-    }
-
 }
