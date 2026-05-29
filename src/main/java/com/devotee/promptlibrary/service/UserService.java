@@ -1,5 +1,6 @@
 package com.devotee.promptlibrary.service;
 
+import com.devotee.promptlibrary.dto.ImageUploadResponse;
 import com.devotee.promptlibrary.dto.UserRequest;
 import com.devotee.promptlibrary.dto.UserResponse;
 import com.devotee.promptlibrary.model.User;
@@ -7,6 +8,8 @@ import com.devotee.promptlibrary.repositroy.UserRepo;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
+import java.io.IOException;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -17,6 +20,7 @@ import java.util.List;
 public class UserService {
 
     private final UserRepo userRepository;
+    private final CloudinaryService cloudinaryService;
 
     private final PasswordEncoder passwordEncoder;
 
@@ -95,5 +99,55 @@ public class UserService {
                 .createdAt(user.getCreatedAt())
                 .updatedAt(user.getUpdatedAt())
                 .build();
+    }
+
+    public UserResponse uploadProfileImage(
+            String email,
+            MultipartFile image
+    ) throws IOException {
+
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() ->
+                        new RuntimeException("User not found")
+                );
+
+        ImageUploadResponse uploadedImage =
+                cloudinaryService.uploadImage(image);
+
+        user.setProfileImage(
+                uploadedImage.getImageUrl()
+        );
+
+        User savedUser =
+                userRepository.save(user);
+
+        return convertToResponse(savedUser);
+    }
+
+    public UserResponse uploadBannerImage(
+            String email,
+            MultipartFile image
+    ) throws IOException {
+
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() ->
+                        new RuntimeException("User not found")
+                );
+
+        ImageUploadResponse uploadedImage =
+                cloudinaryService.uploadImage(image);
+
+        user.setBannerImage(
+                uploadedImage.getImageUrl()
+        );
+
+        user.setUpdatedAt(
+                LocalDateTime.now()
+        );
+
+        User savedUser =
+                userRepository.save(user);
+
+        return convertToResponse(savedUser);
     }
 }
