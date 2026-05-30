@@ -3,7 +3,6 @@ package com.devotee.promptlibrary.dto;
 import lombok.*;
 
 import java.time.LocalDateTime;
-import java.util.List;
 
 @Getter
 @Setter
@@ -32,8 +31,6 @@ public class UserResponse {
     private String website;
 
     private String location;
-
-    private List<String> uploads;
 
     private LocalDateTime createdAt;
 

@@ -6,8 +6,6 @@ import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
 
 @Document(collection = "users")
 @Getter
@@ -42,9 +40,6 @@ public class User {
     private String website;
 
     private String location;
-
-    @Builder.Default
-    private List<String> uploads = new ArrayList<>();
 
     private LocalDateTime createdAt;
 
